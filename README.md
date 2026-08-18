@@ -53,13 +53,13 @@ That is where a per-host `PATH`, a larger `font-size` for a Retina panel, or an 
 
 `nvim` ships three AI integrations. Two of them send buffer contents to a third-party inference endpoint, and both are **disabled unless you opt in per machine**:
 
-| Plugin | Sends code to | Default |
-|---|---|---|
-| `avante.nvim` | `api.deepseek.com` | **off** |
-| `copilot.vim` | GitHub / Microsoft, and needs an account signed in inside the editor | **off** |
-| `claudecode.nvim` | drives the local Claude Code CLI — no independent egress | on |
+| Plugin | Sends code to | Default | Gate |
+|---|---|---|---|
+| `avante.nvim` | `api.deepseek.com` | **off** | `NVIM_AI_EXTERNAL=1` |
+| `copilot.vim` | GitHub / Microsoft, and needs an account signed in inside the editor | **off** | none — off unconditionally, also costs ~600MB/session |
+| `claudecode.nvim` | drives the local Claude Code CLI — no independent egress | on | — |
 
-To enable the first two on a machine where the code in your buffers is yours to send:
+To enable `avante` on a machine where the code in your buffers is yours to send:
 
 ```sh
 echo 'export NVIM_AI_EXTERNAL=1' >> ~/.bashrc.local

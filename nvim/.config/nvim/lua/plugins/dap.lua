@@ -23,7 +23,9 @@ return {
         end,
       },
       {
-        "williamboman/mason.nvim",
+        -- Renamed upstream from williamboman/mason.nvim; LazyVim warns on the
+        -- old name at startup.
+        "mason-org/mason.nvim",
         opts = function(_, opts)
           opts.ensure_installed = opts.ensure_installed or {}
           table.insert(opts.ensure_installed, "debugpy")
