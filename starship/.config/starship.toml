@@ -1,0 +1,58 @@
+# Starship Prompt Configuration
+# See https://starship.rs/config/ for full documentation
+
+# Fast performance settings
+scan_timeout = 10
+command_timeout = 500
+
+# Compact format - customize what you see
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$nodejs\
+$python\
+$rust\
+$golang\
+$cmd_duration\
+$line_break\
+$character"""
+
+[directory]
+truncation_length = 0
+truncate_to_repo = false
+style = "bold cyan"
+
+[git_branch]
+symbol = " "
+style = "bold purple"
+
+[git_status]
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+modified = "!${count}"
+staged = "+${count}"
+style = "bold yellow"
+
+[nodejs]
+format = "via [ $version](bold green) "
+
+[python]
+format = "via [ $version](bold blue) "
+
+[rust]
+format = "via [ $version](bold orange) "
+
+[golang]
+format = "via [ $version](bold cyan) "
+
+[cmd_duration]
+min_time = 500
+format = "took [$duration](bold yellow) "
+
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[➜](bold red)"
