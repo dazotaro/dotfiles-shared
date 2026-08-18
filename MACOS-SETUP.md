@@ -2,7 +2,23 @@
 
 Getting a fresh Mac from nothing to a working terminal, in the order things have to happen.
 
-This is the machine-generic half. If you are setting up a work machine, the policy-specific steps — security training, disk encryption, certificate checks, and whatever your employer requires — live in your own private notes and come **first**. Nothing here substitutes for them.
+Complete as a procedure. Where a step depends on your employer's specifics — which tools are approved, which forge hosts the code, what training is mandatory — it says so and stops, rather than guessing on your behalf. Keep those answers in your own private notes; they do not belong in a public repo, and neither does a description of any particular company's security posture.
+
+Phase 0 is not optional on a machine you do not own.
+
+## 0. Before any of this, on a machine you don't own
+
+None of these involve Homebrew. They are the reasons the rest is safe to do.
+
+**Finish whatever security-awareness training is mandatory, first.** On many employment agreements, incomplete training is the tripwire that converts any other minor infraction into a formal process. It is usually an hour, and it removes a whole category of risk. Save the completion record.
+
+**Confirm what is actually approved before installing anything.** Get it in writing from whoever approves it, and keep your install list identical to the list you sent. The diff between `install-macos.sh` and that message is your record that nothing extra went on. If there is no self-service software catalog on the machine, then approval plus admin rights *is* the sanctioned path — and adding anything to the list later needs the same approval.
+
+**Turn on full-disk encryption** if it is not already on, and save the recovery key somewhere you control. Check whether your employer escrows it.
+
+**Check for a corporate root certificate.** Keychain Access → System Keychains → **System** → View → Show Certificates. Anything that is not Apple's and not a recognizable public CA — corporate roots usually carry a company or security-vendor name. If one is present, HTTPS is decryptable in transit and the machine is not a place for anything you would not want read. `scutil --proxy` is a quick cross-check.
+
+Record the answers privately. Do not publish them: a document naming a company alongside its endpoint tooling and the state of its disk encryption is a reconnaissance document, and an unlisted gist is not a private one.
 
 ## 1. Xcode Command Line Tools
 
@@ -150,6 +166,50 @@ The installer accepts an optional target — `stable`, `latest`, or an exact ver
 
 On a managed machine, install this only if it is approved, and sign in with the account your employer provides — never a personal one, and never a personal GitHub inside it.
 
+## 9. A PC keyboard on a Mac
+
+If you use an external PC keyboard, the modifiers are in the wrong physical places by default. This is one System Settings change and no install.
+
+### Why Alt+Tab does nothing
+
+macOS maps the key labelled **Win** to Command and the key labelled **Alt** to Option. The app switcher is Cmd+Tab, so on a PC keyboard it lands on Win+Tab.
+
+Look at the physical order, left of the spacebar:
+
+```
+PC keyboard:   Ctrl   Win      Alt      [space]
+Mac keyboard:  Ctrl   Option   Command  [space]
+```
+
+Win sits where Option belongs and Alt sits where Command belongs. macOS's default mapping preserves the *labels* and therefore inverts the *positions*.
+
+### The fix: swap Option and Command, per keyboard
+
+**System Settings → Keyboard → Keyboard Shortcuts… → Modifier Keys** (older macOS: System Preferences → Keyboard → Modifier Keys). Pick the external keyboard from the **Select keyboard** dropdown first — the setting is per-device, so the laptop's built-in keyboard keeps its normal behaviour.
+
+Then set:
+
+| Physical key | Change to |
+|---|---|
+| Option (⌥) | **Command** |
+| Command (⌘) | **Option** |
+
+Two things improve at once. Alt+Tab becomes the app switcher, and Command now sits next to the spacebar exactly where a Mac keyboard has it — so every `Cmd+C` / `Cmd+S` / `Cmd+Q` falls under the thumb where it is designed to.
+
+### What this does not fix
+
+**macOS is still macOS.** Copy stays Cmd+C, which is now the physical Alt key — it does **not** become Ctrl+C.
+
+Resist the temptation to remap Ctrl→Command to get Linux-style copy/paste. It breaks Ctrl+C as SIGINT, Ctrl+D, Ctrl+R, and Ctrl+A/E line editing — everything a terminal depends on. For anyone who lives in a shell, that trade is not close. Ghostty's bindings here are all `ctrl+shift+*` and are unaffected by the Option/Command swap.
+
+**Cmd+Tab switches applications, not windows.** That is a real behavioural difference from Alt+Tab, not a configuration problem. `Cmd+`` ` (backtick) cycles windows *within* the front application, and Mission Control shows everything. If you want a single window-level switcher, rebind **Move focus to next window** under Keyboard Shortcuts → Keyboard.
+
+**Home/End** scroll the document rather than jumping to line start/end. In a shell, Ctrl+A and Ctrl+E do what you want.
+
+### Karabiner-Elements: capable, and the wrong tool on a managed machine
+
+Karabiner is what everyone recommends, and it does far more than the built-in panel. Do not reach for it here without asking first. It installs a **DriverKit system extension** that presents a virtual HID device, which means it (a) needs a third-party install and an explicit system-extension approval, and (b) is by design an input interceptor that sees every keystroke. On a centrally managed machine that is precisely the software profile endpoint tooling is built to flag. The built-in Modifier Keys panel solves the actual problem with no install at all.
+
 ## Verification
 
 - [ ] `xcode-select -p` returns a path
@@ -164,7 +224,24 @@ On a managed machine, install this only if it is approved, and sign in with the 
 - [ ] `~/.ssh/id_ed25519_work` exists **with a passphrase**
 - [ ] `~/.aws/config` has no profiles, and no default `AWS_PROFILE` is set anywhere
 - [ ] `echo $NVIM_AI_EXTERNAL` is empty on any machine whose code is not yours to send
+- [ ] If using a PC keyboard: Option/Command swapped **for that keyboard only**, and Alt+Tab switches apps
 
-## One thing to get right on a machine that isn't yours
+## Rules for a machine that isn't yours
 
-`NVIM_AI_EXTERNAL` gates `avante.nvim`, which ships buffer contents to a third-party inference endpoint. **Leave it unset** on any machine where the code in your buffers is not yours to send onward. The gate is fail-safe — unset means the plugin does not load — so the correct action is simply to never set it. `copilot.vim` is off unconditionally.
+The setup above is only safe if these hold.
+
+**Leave `NVIM_AI_EXTERNAL` unset.** It gates `avante.nvim`, which ships buffer contents to a third-party inference endpoint. On a machine where the code in your buffers is not yours to send onward, that is a confidentiality problem rather than a preference — and typically a policy violation on its own. The gate is fail-safe: unset means the plugin never loads, so the correct action is to do nothing. `copilot.vim` is off unconditionally.
+
+**No personal accounts of any kind.** Not an Apple ID, not GitHub, not a password manager, not a cloud-sync client, not the AI tool you use personally. A shared Apple ID silently enables Universal Clipboard and Handoff, which is a real host-to-host data path.
+
+**No cloud sync pointed at personal files.** The sanctioned sync client on a managed Mac usually holds Full Disk Access. Never sign a personal account into it and never let it sync anything of your own — that is how personal source ends up inside a company's backups and on the drive they image when you leave.
+
+**No screen mirroring from a personal phone.** `iPhone Mirroring` ships with macOS. Using it bridges a personal device to a machine that is centrally managed.
+
+**Clone only what belongs there.** Not your private dotfiles repo — it needs a personal key and a personal account, which is the same rule. Not your personal notes. This repo is public precisely so it needs neither.
+
+**No removable media** without whatever prior approval your policy requires, and nothing that mounts left parked in a hub shared between two machines.
+
+**Lock the screen whenever you leave it.**
+
+Keep the company-specific version of this list — names, products, clause references — in private notes, not here.
