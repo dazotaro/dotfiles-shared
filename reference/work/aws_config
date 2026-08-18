@@ -1,0 +1,18 @@
+# Work-machine ~/.aws/config
+#
+# Intentionally empty of profiles. The personal config carried unrelated
+# profiles; none of them belong here.
+#
+# When work credentials arrive, add named profiles and keep the standing habit of
+# prefixing every invocation rather than setting a default:
+#
+#     AWS_PROFILE=<name> aws s3 ls
+#
+# Do NOT set a default AWS_PROFILE in the shell. With more than one account's
+# credentials on a machine, a stale default is how you act on the wrong account.
+#
+# Credentials themselves go in ~/.aws/credentials (or better, SSO), never here.
+
+# [profile example]
+# region = us-west-2
+# output = json

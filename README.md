@@ -18,7 +18,7 @@ Each top-level directory is an independent Stow package. Stow's default target i
 | `starship` | `~/.config/starship.toml` |
 | `tmux` | `~/.tmux.conf` |
 
-`reference/` is documentation, not a Stow package. Don't stow it.
+`reference/` is documentation and templates, not a Stow package. Don't stow it.
 
 **Neovim only.** There is deliberately no package for legacy vim, Alacritty, or WezTerm — Ghostty and Neovim are the whole toolchain here. Anything older stays in the private repo.
 
@@ -37,6 +37,24 @@ Or by hand:
 stow -n -v bash nvim ghostty starship tmux   # dry run first, always
 stow bash nvim ghostty starship tmux
 ```
+
+## Work machines: four configs that are copied, not stowed
+
+`~/.gitconfig`, `~/.ssh/config`, `~/.aws/config`, and `~/.claude/CLAUDE.md` are **not** Stow packages. Two reasons:
+
+- **Three of them carry identity.** A stowed `~/.gitconfig` would be one file serving both machines, and the entire point is that a work identity and a personal identity never share a file.
+- **`~/.claude` would swallow this repo.** Claude Code writes settings, history, and project state into it. If the directory doesn't exist when you stow, Stow folds and symlinks the *whole directory* into this checkout — and Claude Code would then be writing session data into a public git repo.
+
+Install them with:
+
+```sh
+./setup-work-configs.sh --email you@company.com --name "Your Name"          # dry run
+./setup-work-configs.sh --email you@company.com --name "Your Name" --apply
+```
+
+No real address is committed here. The templates in `reference/work/` carry `__WORK_EMAIL__` / `__WORK_NAME__` placeholders substituted at install time, so a work address never lands in a public repo.
+
+The script backs up anything it would replace with a timestamped suffix, and **never overwrites an existing SSH private key**. Details and the reasoning behind each template are in [`reference/work/README.md`](reference/work/README.md).
 
 ## Per-machine differences go in local files, never in this repo
 

@@ -113,9 +113,13 @@ cat <<'EOF'
   ./bootstrap.sh            # dry run the symlinks
   ./bootstrap.sh --apply
 
-Then hand-write the three work-only configs that are NOT in this repo:
-  ~/.gitconfig       -- work email, credential.helper = osxkeychain
-  ~/.ssh/config      -- fresh ed25519 keypair, no copied private key
-  ~/.aws/config      -- start empty
-  ~/.claude/CLAUDE.md -- see reference/claude-work-CLAUDE.md
+Then install the four work-only configs. These are copied rather than stowed
+because they carry identity, or because Stow would swallow ~/.claude:
+
+  ./setup-work-configs.sh --email you@company.com --name "Your Name"
+  ./setup-work-configs.sh --email you@company.com --name "Your Name" --apply
+
+It writes ~/.gitconfig, ~/.ssh/config, ~/.aws/config and ~/.claude/CLAUDE.md,
+generates a fresh ed25519 key, backs up anything it would replace, and never
+overwrites an existing private key. See reference/work/README.md.
 EOF

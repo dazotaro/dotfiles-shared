@@ -1,0 +1,29 @@
+# Work-machine ~/.ssh/config
+#
+# Written fresh. NOTHING is carried over from the personal config, which pointed
+# at a different forge with a Linux IdentityFile path that does not exist here.
+#
+# Two deliberate differences from the personal version:
+#
+#   1. No `StrictHostKeyChecking no`. That disables host-key verification, which
+#      is the check that protects against a man-in-the-middle. It is worth
+#      removing on personal machines too.
+#   2. UseKeychain + AddKeysToAgent are macOS-only (Apple's OpenSSH fork). They
+#      let the passphrase live in the login keychain instead of being retyped or,
+#      worse, omitted.
+#
+# NEVER copy a private key between machines. setup-work-configs.sh generates a
+# fresh ed25519 pair; upload only the .pub half to whatever forge work uses.
+
+Host *
+	AddKeysToAgent yes
+	UseKeychain yes
+	IdentityFile ~/.ssh/id_ed25519_work
+	IdentitiesOnly yes
+	ServerAliveInterval 60
+
+# Add work forge hosts below once you know where their code lives, e.g.
+#
+# Host github.com
+# 	User git
+# 	IdentityFile ~/.ssh/id_ed25519_work

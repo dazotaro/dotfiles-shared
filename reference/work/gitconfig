@@ -1,0 +1,42 @@
+# Work-machine ~/.gitconfig
+#
+# Placeholders __WORK_EMAIL__ and __WORK_NAME__ are substituted by
+# setup-work-configs.sh. No real address is committed to this public repo.
+#
+# Two lines from the personal version are deliberately absent:
+#   - a personal email, which would stamp every work commit permanently
+#   - credential.helper = store, which writes credentials in PLAINTEXT to
+#     ~/.git-credentials. On a managed machine with endpoint agents holding Full
+#     Disk Access, that is a bad place for a plaintext secret. osxkeychain below
+#     uses the OS keychain instead.
+#
+# The filter "lfs" block is omitted on purpose — `git lfs install` writes it if
+# and when LFS is actually needed.
+
+[user]
+	email = __WORK_EMAIL__
+	name = __WORK_NAME__
+[core]
+	autocrlf = input
+	editor = nvim
+	pager = delta
+[init]
+	defaultBranch = main
+[credential]
+	helper = osxkeychain
+[delta]
+	navigate = true
+	light = false
+	line-numbers = true
+	side-by-side = false
+[interactive]
+	diffFilter = delta --color-only
+[merge]
+	conflictstyle = diff3
+[diff]
+	colorMoved = default
+[pager]
+	diff = delta
+	log = delta
+	reflog = delta
+	show = delta
