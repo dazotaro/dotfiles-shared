@@ -48,11 +48,15 @@ stow bash nvim ghostty starship tmux
 Install them with:
 
 ```sh
-./setup-work-configs.sh --email you@company.com --name "Your Name"          # dry run
-./setup-work-configs.sh --email you@company.com --name "Your Name" --apply
+./setup-work-configs.sh            # prompts for email and name; dry run
+./setup-work-configs.sh --apply    # prompts, then writes
 ```
 
-No real address is committed here. The templates in `reference/work/` carry `__WORK_EMAIL__` / `__WORK_NAME__` placeholders substituted at install time, so a work address never lands in a public repo.
+**Let it prompt.** Passing `--email` puts the address in `~/.bash_history`; answering a prompt leaves no trace on disk. The flags exist for scripted use.
+
+No address is committed here either. The templates in `reference/work/` carry `__WORK_EMAIL__` / `__WORK_NAME__` placeholders substituted at install time, so a work address never lands in a public repo.
+
+Key generation **requires a terminal**. With stdin redirected, `ssh-keygen` reads EOF as an empty passphrase and silently writes an unprotected private key, so the script refuses rather than guessing — the other three configs still install.
 
 The script backs up anything it would replace with a timestamped suffix, and **never overwrites an existing SSH private key**. Details and the reasoning behind each template are in [`reference/work/README.md`](reference/work/README.md).
 

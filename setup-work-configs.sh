@@ -21,11 +21,15 @@ KEY="$HOME/.ssh/id_ed25519_work"
 
 usage() {
   cat <<EOF
-usage: $(basename "$0") --email <addr> --name <"Full Name"> [--apply]
+usage: $(basename "$0") [--email <addr>] [--name <"Full Name">] [--apply]
 
   --email   work email address, written into ~/.gitconfig
   --name    full name, written into ~/.gitconfig
   --apply   actually write files (default is a dry run)
+
+Omit --email/--name and you will be prompted. PREFER THAT: an address passed on
+the command line lands in ~/.bash_history. (A leading space also keeps it out,
+since the shared .bashrc sets HISTCONTROL=ignoreboth, but prompting is simpler.)
 EOF
   exit 1
 }
@@ -52,8 +56,19 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-[ -n "$EMAIL" ] || { echo "--email is required" >&2; usage; }
-[ -n "$NAME" ] || { echo "--name is required" >&2; usage; }
+# Prompt rather than require, so the address need never appear in argv or in
+# shell history. Reading into a variable leaves no trace on disk.
+if [ -z "$EMAIL" ]; then
+  printf 'work email address: ' >&2
+  read -r EMAIL
+fi
+if [ -z "$NAME" ]; then
+  printf 'full name for git commits: ' >&2
+  read -r NAME
+fi
+
+[ -n "$EMAIL" ] || { echo "an email address is required" >&2; exit 1; }
+[ -n "$NAME" ] || { echo "a name is required" >&2; exit 1; }
 
 case "$EMAIL" in
 *@*.*) ;;
@@ -114,12 +129,26 @@ install_tpl "$TPL/ssh_config" "$HOME/.ssh/config" 600
 if [ -f "$KEY" ]; then
   warn "$KEY already exists — NOT touching it. A private key is never overwritten."
 elif [ "$APPLY" = 1 ]; then
-  say "generating a fresh ed25519 keypair (you will be prompted for a passphrase)"
-  ssh-keygen -t ed25519 -C "$EMAIL" -f "$KEY"
-  chmod 600 "$KEY"
-  chmod 644 "$KEY.pub"
+  # Require a terminal. With stdin redirected, ssh-keygen reads EOF as an EMPTY
+  # passphrase and silently produces an UNPROTECTED private key. On a work
+  # machine that is not an acceptable default, so refuse rather than guess.
+  if [ ! -t 0 ]; then
+    warn "stdin is not a terminal — SKIPPING key generation."
+    warn "ssh-keygen would take EOF as an empty passphrase and write an"
+    warn "unprotected private key. Run this by hand in a terminal instead:"
+    warn "  ssh-keygen -t ed25519 -C \"$EMAIL\" -f \"$KEY\""
+  else
+    say "generating a fresh ed25519 keypair (you will be prompted for a passphrase)"
+    # Non-fatal: a failure here must not abort the remaining steps under set -e.
+    if ssh-keygen -t ed25519 -C "$EMAIL" -f "$KEY"; then
+      chmod 600 "$KEY"
+      chmod 644 "$KEY.pub"
+    else
+      warn "ssh-keygen failed or was cancelled — continuing with the other configs."
+    fi
+  fi
 else
-  say "would generate: ssh-keygen -t ed25519 -C \"$EMAIL\" -f \"$KEY\""
+  say "would generate: ssh-keygen -t ed25519 -C \"$EMAIL\" -f \"$KEY\" (requires a terminal)"
 fi
 say ""
 

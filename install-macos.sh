@@ -116,8 +116,11 @@ cat <<'EOF'
 Then install the four work-only configs. These are copied rather than stowed
 because they carry identity, or because Stow would swallow ~/.claude:
 
-  ./setup-work-configs.sh --email you@company.com --name "Your Name"
-  ./setup-work-configs.sh --email you@company.com --name "Your Name" --apply
+  ./setup-work-configs.sh            # prompts for email and name; dry run
+  ./setup-work-configs.sh --apply    # prompts, then writes
+
+Let it prompt rather than passing --email; an address on the command line lands
+in ~/.bash_history. Key generation needs a real terminal.
 
 It writes ~/.gitconfig, ~/.ssh/config, ~/.aws/config and ~/.claude/CLAUDE.md,
 generates a fresh ed25519 key, backs up anything it would replace, and never

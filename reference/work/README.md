@@ -12,11 +12,13 @@ The four configs that are **copied, never stowed**, and that carry identity or c
 Install them with the script at the repo root:
 
 ```sh
-./setup-work-configs.sh --email you@company.com --name "Your Name"          # dry run
-./setup-work-configs.sh --email you@company.com --name "Your Name" --apply
+./setup-work-configs.sh            # prompts for email and name; dry run
+./setup-work-configs.sh --apply    # prompts, then writes
 ```
 
-No real address is committed here — the templates carry `__WORK_EMAIL__` and `__WORK_NAME__` placeholders that the script substitutes on the machine.
+**Prefer the prompt over `--email`.** An address on the command line lands in `~/.bash_history`. A prompted answer never touches disk.
+
+No address is committed here — the templates carry `__WORK_EMAIL__` and `__WORK_NAME__` placeholders that the script substitutes on the machine.
 
 ## Why copied and not stowed
 
