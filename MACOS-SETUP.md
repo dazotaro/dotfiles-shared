@@ -183,6 +183,12 @@ Mac keyboard:  Ctrl   Option   Command  [space]
 
 Win sits where Option belongs and Alt sits where Command belongs. macOS's default mapping preserves the *labels* and therefore inverts the *positions*.
 
+### Do NOT remap the laptop's own keyboard
+
+The built-in keyboard is already in Mac order — `Ctrl / Option / Command / space` — so Command already sits next to the spacebar. There is no mismatch to correct, and remapping it would *create* the one you just removed.
+
+The principle: you are standardising on **position, not label**. After the swap, the key next to the spacebar is Command on both keyboards. The external keyboard's legends now lie — the key printed "Alt" is Command — but your thumb finds that key by position, never by reading it. Consistent position beats honest labelling.
+
 ### The fix: swap Option and Command, per keyboard
 
 **System Settings → Keyboard → Keyboard Shortcuts… → Modifier Keys** (older macOS: System Preferences → Keyboard → Modifier Keys). Pick the external keyboard from the **Select keyboard** dropdown first — the setting is per-device, so the laptop's built-in keyboard keeps its normal behaviour.
@@ -205,6 +211,20 @@ Resist the temptation to remap Ctrl→Command to get Linux-style copy/paste. It 
 **Cmd+Tab switches applications, not windows.** That is a real behavioural difference from Alt+Tab, not a configuration problem. `Cmd+`` ` (backtick) cycles windows *within* the front application, and Mission Control shows everything. If you want a single window-level switcher, rebind **Move focus to next window** under Keyboard Shortcuts → Keyboard.
 
 **Home/End** scroll the document rather than jumping to line start/end. In a shell, Ctrl+A and Ctrl+E do what you want.
+
+### Don't fight the platform beyond this
+
+The swap fixes a physical mismatch. Converting macOS wholesale into Linux is a different and worse project.
+
+The Ctrl/Cmd split is genuinely *better* for terminal work, not just different. macOS reserves Cmd for application shortcuts and leaves Ctrl entirely to the shell, so Ctrl+C means SIGINT always and everywhere with no collision. Linux overloads Ctrl+C — interrupt in a terminal, copy everywhere else — which is exactly why Linux terminals need Ctrl+Shift+C as a workaround. macOS never needed the workaround.
+
+A half-converted machine is the worst state to be in: neither muscle memory becomes reliable. Two platforms with two clear idioms is easier to hold than two platforms bent halfway into each other.
+
+**The one exception worth making is the terminal**, since that is where the muscle memory actually lives. The Ghostty config here binds `ctrl+shift+c` / `ctrl+shift+v` explicitly on both platforms — a no-op on Linux where it is already the default, and additive on macOS where Cmd+C keeps working too. So copy and paste use the identical chord on both machines while nothing system-wide is touched.
+
+### If you share one keyboard between two machines
+
+Worth noticing what the swap buys in that setup: `Alt+Tab` becomes the switcher on **both** hosts — windows on Linux, applications on macOS — so your most-used chord stops depending on which machine the monitor is showing. Combined with the terminal bindings above, the two chords you hit most often are now the same on both.
 
 ### Karabiner-Elements: capable, and the wrong tool on a managed machine
 

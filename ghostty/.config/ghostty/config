@@ -49,6 +49,18 @@ keybind = ctrl+shift+alt+arrow_down=resize_split:down,5
 keybind = ctrl+shift+x=close_surface
 keybind = ctrl+shift+z=toggle_split_zoom
 
+# Copy/paste — Linux-style, stated explicitly so the chord is identical on both
+# platforms. On Linux this is already the default, so it is a no-op there. On
+# macOS it ADDS to Cmd+C/Cmd+V rather than replacing them, so both work.
+#
+# This is the one place worth making cross-platform. System-wide, macOS keeps
+# Cmd for app shortcuts and leaves Ctrl entirely to the shell — which is why
+# Ctrl+C can always mean SIGINT here and never has to fight "copy". Do not
+# remap Ctrl globally to chase Linux parity; fix it in the terminal instead,
+# which is where the muscle memory actually lives.
+keybind = ctrl+shift+c=copy_to_clipboard
+keybind = ctrl+shift+v=paste_from_clipboard
+
 # ---------------------------------------------------------------------------
 # Per-machine overrides. The "?" prefix means "skip silently if absent", and
 # config-file directives are processed at end-of-file, so anything in the local
