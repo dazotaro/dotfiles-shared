@@ -14,7 +14,14 @@ None of these involve Homebrew. They are the reasons the rest is safe to do.
 
 **Confirm what is actually approved before installing anything.** Get it in writing from whoever approves it, and keep your install list identical to the list you sent. The diff between `install-macos.sh` and that message is your record that nothing extra went on. If there is no self-service software catalog on the machine, then approval plus admin rights *is* the sanctioned path — and adding anything to the list later needs the same approval.
 
-**Turn on full-disk encryption** if it is not already on, and save the recovery key somewhere you control. Check whether your employer escrows it.
+**Turn on full-disk encryption** if it is not already on — System Settings → Privacy & Security → FileVault → Turn On. `fdesetup status` tells you where you stand.
+
+Two things in that flow are easy to get wrong:
+
+- macOS offers *"Allow my iCloud account to unlock my disk"* or *"Create a recovery key"*. **Take the recovery key** on any machine where you should not be signing in a personal Apple ID — a shared Apple ID enables Universal Clipboard and Handoff, which is a real data path between your devices and that machine.
+- Store the key **off** the machine. If the disk will not unlock, a password manager living on that disk is worthless. Paper is fine, and better than nothing stored anywhere.
+
+Ask whether your employer escrows the key. If the Mac was not enrolled via Automated Device Enrollment, it very likely does not — in which case your copy is the only one.
 
 **Check for a corporate root certificate.** Keychain Access → System Keychains → **System** → View → Show Certificates. Anything that is not Apple's and not a recognizable public CA — corporate roots usually carry a company or security-vendor name. If one is present, HTTPS is decryptable in transit and the machine is not a place for anything you would not want read. `scutil --proxy` is a quick cross-check.
 
