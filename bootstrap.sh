@@ -57,6 +57,19 @@ if [ "$OS" = macos ]; then
     say ""
   fi
 
+  # The bash package links ~/.bash_profile and ~/.bashrc. zsh -- the macOS
+  # default -- never opens either, so on a stock Mac these links are made
+  # successfully and do nothing at all. Warn rather than let that pass silently.
+  case "${SHELL:-}" in
+  *bash) ;;
+  *)
+    warn "login shell is ${SHELL:-unset}, not bash."
+    warn "zsh does not read ~/.bash_profile or ~/.bashrc, so those links would be inert."
+    warn "  chsh -s /bin/bash    # then open a NEW terminal; \$SHELL updates on next login"
+    say ""
+    ;;
+  esac
+
   if [ ! -d /opt/homebrew ] && [ ! -d /usr/local/Homebrew ]; then
     warn "Homebrew not found — most tools these configs reference will be missing."
     say ""

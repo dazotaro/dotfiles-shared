@@ -40,9 +40,41 @@ xcode-select -p        # expect /Library/Developer/CommandLineTools
 git --version
 ```
 
-The `git` you get here is Apple's. Homebrew's is newer and will shadow it in step 3; that is intended, since `git-delta` as a pager wants a current git.
+The `git` you get here is Apple's. Homebrew's is newer and will shadow it in step 4; that is intended, since `git-delta` as a pager wants a current git.
 
-## 2. Homebrew
+## 2. Make bash your login shell
+
+Do this before Homebrew, because everything after it assumes bash.
+
+macOS has defaulted to **zsh** since Catalina — Apple froze bash at 3.2 in 2007 rather than ship GPLv3. Every terminal starts your *login shell*, and zsh never reads `.bash_profile` or `.bashrc`; those are bash-only filenames. zsh reads `.zshenv` -> `.zprofile` -> `.zshrc`.
+
+So on a stock Mac, step 6 will create both symlinks, report success, and do **nothing**. There is no error, because nothing failed — the files are simply never opened. That is worse than a failure: you get a bare prompt and no signal about which part of the setup is wrong.
+
+```sh
+grep bash /etc/shells      # /bin/bash is listed by default
+chsh -s /bin/bash          # no sudo, no editing /etc/shells
+```
+
+New window:
+
+```sh
+echo $SHELL                # /bin/bash
+echo $BASH_VERSION         # 3.2.57(1)-release
+```
+
+On a machine you don't own this is worth distinguishing from an install: `chsh` sets a preference on your own account and adds nothing to the disk, so it sits outside whatever approval covers software. `brew install bash` does not.
+
+### Stock bash 3.2 runs this config, with three rough edges
+
+`.bashrc` here is deliberately 3.2-clean — no associative arrays, no `mapfile`, no `${var,,}`. What Apple's bash costs you:
+
+1. **A deprecation banner** on every shell ("The default interactive shell is now zsh"). `BASH_SILENCE_DEPRECATION_WARNING=1` silences it. Set it where it applies *before* the shell starts — `env = BASH_SILENCE_DEPRECATION_WARNING=1` in `~/.config/ghostty/config.local` — rather than in a dotfile that is a symlink into this repo.
+2. **`z <TAB>` completion.** zoxide guards that block on bash >= 4.4, which it needs for `@Q` quoting. `z` and `zi` work.
+3. **fzf's `**<TAB>` fuzzy path completion**, which needs bash 4. Ctrl-R and Ctrl-T still work; fzf ships an explicit 3.2 readline path for them.
+
+If those matter more than the install does, `brew install bash` and either `chsh -s /opt/homebrew/bin/bash` (after adding it to `/etc/shells`) or `command = /opt/homebrew/bin/bash -l` in `~/.config/ghostty/config.local`.
+
+## 3. Homebrew
 
 ```sh
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -55,20 +87,20 @@ eval "$(/opt/homebrew/bin/brew shellenv)"     # Apple Silicon
 eval "$(/usr/local/bin/brew shellenv)"        # Intel
 ```
 
-## 3. The toolchain
+## 4. The toolchain
 
 ```sh
 brew install git neovim tmux ripgrep fd fzf bat eza git-delta starship zoxide stow btop uv
 brew install --cask ghostty font-jetbrains-mono-nerd-font
 ```
 
-`stow` installs the config in step 5. `uv` is the Python toolchain.
+`stow` installs the config in step 6. `uv` is the Python toolchain.
 
 **The Nerd Font cask is not optional.** Both the Ghostty config and the Starship prompt use its glyphs; without it you get tofu boxes everywhere.
 
 On a managed machine, install only what has actually been approved. `install-macos.sh` in this repo carries the same list and runs it for you, dry-run by default.
 
-## 4. Node, via nvm
+## 5. Node, via nvm
 
 ```sh
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
@@ -82,7 +114,22 @@ nvm install --lts
 
 Deliberately not `brew install node` — the formula fights version managers, and `.bashrc` here already wires up `$NVM_DIR`.
 
-## 5. Clone and link this repo
+**Two ways this installer surprises you on a fresh machine:**
+
+1. **"Profile not found."** nvm does not hardcode a file. It walks `~/.bashrc`, `~/.bash_profile`, `~/.zprofile`, `~/.zshrc` and appends its snippet to the first that **already exists** — and on a fresh Mac, before step 6, none do. The clone into `~/.nvm` still succeeded; only the shell wiring was skipped. `touch` any one of those files and re-run.
+2. **Run it before step 6, not after.** Once stow has run, `~/.bashrc` is a symlink into this checkout and `>>` writes through symlinks — so the installer appends itself to `bash/.bashrc` *in the repo* and you get a mystery diff in a tree you did not mean to edit.
+
+Safer for any `curl | bash` installer that wants a profile:
+
+```sh
+touch ~/.bashrc.local
+PROFILE="$HOME/.bashrc.local" curl -o- https://.../install.sh | bash
+git -C ~/dotfiles-shared status --short     # expect empty
+```
+
+`~/.bashrc.local` is sourced last by `.bashrc` and is never tracked.
+
+## 6. Clone and link this repo
 
 ```sh
 git clone https://github.com/dazotaro/dotfiles-shared.git ~/dotfiles-shared
@@ -103,7 +150,7 @@ mv ~/.bashrc ~/.bashrc.pre-stow
 
 Open a new shell. You should get the Starship prompt, `ll` aliased to `eza`, and `cat` to `bat`.
 
-## 6. Ghostty first run
+## 7. Ghostty first run
 
 ### The trap that silently eats your config
 
@@ -129,7 +176,7 @@ printf 'font-size = 14\n' >> ~/.config/ghostty/config.local
 
 Splits are `ctrl+shift+\` and `ctrl+shift+-`; navigation is `ctrl+shift+arrow`. These deliberately override Ghostty's defaults.
 
-## 7. The four copied-not-stowed configs
+## 8. The four copied-not-stowed configs
 
 ```sh
 cd ~/dotfiles-shared
@@ -153,7 +200,7 @@ Upload only the `.pub` half:
 cat ~/.ssh/id_ed25519_work.pub
 ```
 
-## 8. Claude Code
+## 9. Claude Code
 
 Use the native installer, not npm — it is self-contained and needs no Node:
 
@@ -169,11 +216,11 @@ claude --version
 
 The installer accepts an optional target — `stable`, `latest`, or an exact version — if you need to pin.
 
-`~/.claude/CLAUDE.md` comes from step 7. **Do not stow `~/.claude`**: Claude Code writes settings, history, and project state into that directory, and if it does not already exist Stow will fold and symlink the whole thing into this checkout.
+`~/.claude/CLAUDE.md` comes from step 8. **Do not stow `~/.claude`**: Claude Code writes settings, history, and project state into that directory, and if it does not already exist Stow will fold and symlink the whole thing into this checkout.
 
 On a managed machine, install this only if it is approved, and sign in with the account your employer provides — never a personal one, and never a personal GitHub inside it.
 
-## 9. A PC keyboard on a Mac
+## 10. A PC keyboard on a Mac
 
 If you use an external PC keyboard, the modifiers are in the wrong physical places by default. This is one System Settings change and no install.
 
@@ -240,6 +287,8 @@ Karabiner is what everyone recommends, and it does far more than the built-in pa
 ## Verification
 
 - [ ] `xcode-select -p` returns a path
+- [ ] `echo $SHELL` is `/bin/bash`; `echo $BASH_VERSION` is non-empty
+- [ ] `git -C ~/dotfiles-shared status --short` is empty — no installer wrote through a stowed symlink
 - [ ] `brew --version` works
 - [ ] `starship eza rg fd fzf bat delta zoxide stow uv` all resolve on PATH
 - [ ] `node --version` reports the nvm-installed version
@@ -260,6 +309,8 @@ The setup above is only safe if these hold.
 **Leave `NVIM_AI_EXTERNAL` unset.** It gates `avante.nvim`, which ships buffer contents to a third-party inference endpoint. On a machine where the code in your buffers is not yours to send onward, that is a confidentiality problem rather than a preference — and typically a policy violation on its own. The gate is fail-safe: unset means the plugin never loads, so the correct action is to do nothing. `copilot.vim` is off unconditionally.
 
 **No personal accounts of any kind.** Not an Apple ID, not GitHub, not a password manager, not a cloud-sync client, not the AI tool you use personally. A shared Apple ID silently enables Universal Clipboard and Handoff, which is a real host-to-host data path.
+
+**A separate account for their forge.** If your employer invites you to their GitHub/GitLab org, accept with an account created for that job, on the work email — not the one that owns your own repos. Otherwise doing any work means signing your personal credential into a machine you don't control, and it commingles the commit trail that says which work was yours and which was theirs. Note the mechanics: an org invite is accepted by whatever browser session is live, so create the work account *before* opening the link. Check first whether they use managed accounts (GitHub's Enterprise Managed Users, and the equivalents), in which case one is provisioned for you and there is nothing to decide.
 
 **No cloud sync pointed at personal files.** The sanctioned sync client on a managed Mac usually holds Full Disk Access. Never sign a personal account into it and never let it sync anything of your own — that is how personal source ends up inside a company's backups and on the drive they image when you leave.
 

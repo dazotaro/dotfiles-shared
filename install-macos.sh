@@ -87,9 +87,14 @@ echo
 
 echo "=== 5. Node via nvm ==="
 # Deliberately NOT via Homebrew — the node formula fights version managers.
-echo 'would run: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
+# nvm appends its snippet to the first profile file that already EXISTS, out of
+# ~/.bashrc ~/.bash_profile ~/.zprofile ~/.zshrc. On a fresh Mac none do and it
+# skips the wiring; after bootstrap.sh, ~/.bashrc is a symlink INTO this repo
+# and >> writes through it. Point it at the untracked local file instead.
+echo 'would run: PROFILE=$HOME/.bashrc.local curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
 if [ "$APPLY" = 1 ]; then
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+  touch "$HOME/.bashrc.local"
+  PROFILE="$HOME/.bashrc.local" curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
   echo "then, in a NEW shell:  nvm install --lts"
 fi
 echo
@@ -101,8 +106,10 @@ cat <<'EOF'
   docker    -- pending confirmation the team uses containers; Docker Desktop
                licensing is not free at this company size
   bash 5    -- NOT on the approved list. The shared .bashrc is bash-3.2 clean,
-               so stock macOS bash runs it fine and this is optional. If you do
-               want it, ask first rather than installing a shell quietly:
+               so stock macOS bash runs it fine and this is optional. Note that
+               `chsh -s /bin/bash` is NOT an install -- it is a preference on
+               your own account, and it is required, because zsh never reads
+               ~/.bashrc. Only 5.x needs asking:
                  brew install bash
                  # then in ~/.config/ghostty/config.local:
                  #   command = /opt/homebrew/bin/bash -l

@@ -108,7 +108,9 @@ The gate is deliberately **fail-safe**: with the variable unset the plugins don'
 
 **macOS starts login shells**, so `~/.bash_profile` runs and `~/.bashrc` would never load without the source line in it. Keep `.bash_profile` thin.
 
-**macOS ships bash 3.2** and defaults to zsh. For bash 5, `brew install bash` and point the terminal at it — in Ghostty, `command = /opt/homebrew/bin/bash -l` in `config.local`. That avoids editing `/etc/shells` or running `chsh`, which is worth avoiding on a managed machine.
+**macOS defaults to zsh**, which never reads `.bash_profile` or `.bashrc`. On a fresh Mac, `bootstrap.sh` links both and they are simply never opened — success with no effect, and no error to tell you. `chsh -s /bin/bash` first; `/bin/bash` is already in `/etc/shells`, so it needs no sudo and installs nothing, which matters on a machine where installs need approval.
+
+**macOS ships bash 3.2.** `.bashrc` here is kept 3.2-clean — no associative arrays, no `mapfile`, no `${var,,}` — so Apple's bash runs it. The edges it costs: the zsh deprecation banner (set `BASH_SILENCE_DEPRECATION_WARNING=1` in the terminal's environment, not in a stowed dotfile), zoxide's `z <TAB>` completion (needs 4.4 for `@Q`), and fzf's `**<TAB>` path completion (needs 4; Ctrl-R and Ctrl-T are fine). For 5.x, `brew install bash` and either `chsh` into it after adding it to `/etc/shells`, or `command = /opt/homebrew/bin/bash -l` in `config.local`.
 
 **Ghostty on macOS reads two config paths**: `~/.config/ghostty/config` and `~/Library/Application Support/com.mitchellh.ghostty/config`. The Application Support one loads **after**, so it wins. If Ghostty wrote one on first launch, delete it or the stowed config is silently ignored.
 
