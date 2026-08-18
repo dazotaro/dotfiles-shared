@@ -24,6 +24,10 @@ Each top-level directory is an independent Stow package. Stow's default target i
 
 ## Install
 
+Setting up a fresh Mac from nothing? Follow **[MACOS-SETUP.md](MACOS-SETUP.md)** — it covers Xcode CLT, Homebrew, the toolchain, Node, Ghostty's config-path trap, and Claude Code, in order.
+
+Already have the tools:
+
 ```sh
 git clone https://github.com/dazotaro/dotfiles-shared.git ~/dotfiles-shared
 cd ~/dotfiles-shared
