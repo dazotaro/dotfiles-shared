@@ -105,7 +105,7 @@ fi
 # eza - modern ls replacement
 if command -v eza &>/dev/null; then
   alias ls='eza'
-  alias ll='eza -la --git --icons'
+  alias ll='eza -la --git --icons=always'
   alias lt='eza --tree --level=2'
   alias la='eza -a'
 fi
