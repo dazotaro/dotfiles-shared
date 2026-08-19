@@ -33,6 +33,8 @@ git/
 ssh/
 aws/
 claude/
+# Claude Code project dir (ephemeral worktrees, settings.local.json)
+.claude/
 .beads/
 .dolt/
 
