@@ -105,6 +105,9 @@ fi
 # eza - modern ls replacement
 if command -v eza &>/dev/null; then
   alias ls='eza'
+  # --icons takes an OPTIONAL value, so a bare --icons eats a following
+  # always/auto/never as its argument: 'll always' then silently lists nothing.
+  # 'always' not 'auto' (auto shows no icons even on a tty); needs a Nerd Font.
   alias ll='eza -la --git --icons=always'
   alias lt='eza --tree --level=2'
   alias la='eza -a'
